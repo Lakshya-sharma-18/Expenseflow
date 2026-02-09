@@ -1,7 +1,23 @@
 import axios from "axios";
 
+// Helper to ensure base URL is correct
+const getBaseUrl = () => {
+  // FAST FIX: Fallback to the specific deployed backend if env var is missing
+  let url = import.meta.env.VITE_API_URL || "https://expenseflow-server-jwvv.onrender.com/api/";
+
+  // Remove trailing slash if present
+  if (url.endsWith('/')) {
+    url = url.slice(0, -1);
+  }
+  // Ensure it ends with /api
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url + '/';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.MODE === "production" ? "https://expenseflow-server-juvv.onrender.com/api" : "http://localhost:8000/api"),
+  baseURL: getBaseUrl(),
 });
 
 api.interceptors.request.use(

@@ -18,7 +18,7 @@ function Signup() {
     e.preventDefault();
 
     try {
-      const res = await api.post("auth/signup", { username,email, password });
+      const res = await api.post("auth/signup", { username, email, password });
       if (res) {
         toast.success("Registered Successfully");
         console.log(res)
@@ -28,7 +28,10 @@ function Signup() {
         toast.error('Incomplete Credentials')
       }
     } catch (error) {
-      toast.error(`Error: ${error} , Message: Registration Failed`);
+      console.error("Signup Error:", error);
+      const requestedUrl = error.config?.url ? (api.defaults.baseURL + error.config.url) : 'Unknown URL';
+      toast.error(`Failed to connect to: ${requestedUrl}`);
+      toast.error(`Error: ${error.response?.data?.message || error.message}`);
     }
   };
   return (
@@ -85,7 +88,7 @@ function Signup() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-               <div 
+              <div
                 className="password-toggle-icon"
                 onClick={() => setShowPassword(!showPassword)}
               >

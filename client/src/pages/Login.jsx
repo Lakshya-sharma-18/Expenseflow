@@ -20,17 +20,20 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await api.post("auth/login", { email, password },{ withCredentials: true });
+      const res = await api.post("auth/login", { email, password }, { withCredentials: true });
       if (res.data.success) {
         toast.success("Logged-in Successfully");
         localStorage.setItem("token", res.data.token);
         navigate("/dashboard");
       }
-      else{
-          toast.error(res.data.message)
+      else {
+        toast.error(res.data.message)
       }
     } catch (error) {
-      toast.error(`Error: ${error} , Message: Login Failed`);
+      console.error("Login Error:", error);
+      const requestedUrl = error.config?.url ? (api.defaults.baseURL + error.config.url) : 'Unknown URL';
+      toast.error(`Login Failed: ${requestedUrl}`);
+      toast.error(`Error: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -74,7 +77,7 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <div 
+              <div
                 className="password-toggle-icon"
                 onClick={() => setShowPassword(!showPassword)}
               >
