@@ -3,20 +3,38 @@ const userRoute = Router();
 const userDb = require("../models/user");
 const { createToken, validateToken } = require("../services/authentication");
 userRoute.route("/signup").post(async (req, res) => {
-  const { username, email, password } = req.body;
-  if (!username || !email || !password) {
+  try {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Signup failed: Missing credentials",
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await userDb.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User with this email already exists"
+      });
+    }
+
+    //console.log("Response by signup form:", req.body);
+    await userDb.create({ username, email, password });
+
     return res.json({
+      success: true,
+      message: "Signup success",
+    });
+  } catch (error) {
+    console.error("Signup Error:", error);
+    return res.status(500).json({
       success: false,
-      message: "Signup failed",
+      message: "Signup Error: " + error.message
     });
   }
-  //console.log("Response by signup form:", req.body);
-  await userDb.create({ username, email, password });
-
-  return res.json({
-    success: true,
-    message: "Signup success",
-  });
 });
 
 userRoute.route("/login").post(async (req, res) => {
@@ -27,7 +45,7 @@ userRoute.route("/login").post(async (req, res) => {
     const token = createToken(user);
     // console.log(token);
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: isProduction ? "none" : "lax",
